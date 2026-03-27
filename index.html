@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="fi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Yksinkertainen Chat</title>
+    <style>
+        /* Perustyylit */
+        body {
+            font-family: sans-serif;
+            background-color: #f0f2f5;
+            display: flex;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        #chat-container {
+            width: 100%;
+            max-width: 400px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* Viestialue */
+        #chat-window {
+            height: 400px;
+            overflow-y: auto;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .message {
+            padding: 8px 12px;
+            border-radius: 15px;
+            max-width: 80%;
+            font-size: 14px;
+        }
+
+        .user {
+            background: #0084ff;
+            color: white;
+            align-self: flex-end;
+        }
+
+        .bot {
+            background: #e4e6eb;
+            color: black;
+            align-self: flex-start;
+        }
+
+        /* Syöttökenttä */
+        #input-area {
+            display: flex;
+            border-top: 1px solid #ddd;
+            padding: 10px;
+        }
+
+        input {
+            flex: 1;
+            border: none;
+            padding: 10px;
+            border-radius: 20px;
+            background: #f0f2f5;
+            outline: none;
+        }
+
+        button {
+            background: #0084ff;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            margin-left: 10px;
+            border-radius: 20px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #0073e6;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="chat-container">
+        <div id="chat-window">
+            <div class="message bot">Hei! Miten voin auttaa?</div>
+        </div>
+
+        <form id="input-area">
+            <input type="text" id="user-input" placeholder="Kirjoita viesti..." autocomplete="off">
+            <button type="submit">Lähetä</button>
+        </form>
+    </div>
+
+    <script>
+        const chatWindow = document.getElementById('chat-window');
+        const inputForm = document.getElementById('input-area');
+        const userInput = document.getElementById('user-input');
+
+        function addMessage(text, sender) {
+            const div = document.createElement('div');
+            div.classList.add('message', sender);
+            div.textContent = text;
+            chatWindow.appendChild(div);
+
+            // Vieritä automaattisesti alas
+            chatWindow.scrollTop = chatWindow.scrollHeight;
+        }
+
+        inputForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const message = userInput.value.trim();
+
+            if (message) {
+                // Käyttäjän viesti
+                addMessage(message, 'user');
+                userInput.value = '';
+
+                // Simuloitu botin vastaus (viiveellä)
+                setTimeout(() => {
+                    addMessage("Vastaanotin viestisi: " + message, 'bot');
+                }, 1000);
+            }
+        });
+    </script>
+
+</body>
+
+</html>
