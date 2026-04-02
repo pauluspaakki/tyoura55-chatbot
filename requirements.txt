@@ -1,0 +1,12 @@
+# riippuvuudet
+flask
+flask-cors
+requests
+beautifulsoup4
+langchain
+langchain-community
+langchain-text-splitters
+chromadb
+ollama
+
+# pip install -r requirements.txt
