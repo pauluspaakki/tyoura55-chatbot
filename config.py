@@ -23,6 +23,8 @@ URLS = list(set([
     "https://urn.fi/URN:ISBN:978-952-261-997-6",
     "https://pelitutkimus.journal.fi/article/view/108008",
     "https://doi.org/10.1007/s10902-017-9869-7",
-    "https://doi.org/10.1016/j.chb.2017.03.010"
+    "https://doi.org/10.1016/j.chb.2017.03.010",
+    "https://reports.weforum.org/docs/WEF_Future_of_Jobs_Report_2025.pdf",
+    "https://www.sitra.fi/wp-content/uploads/2025/12/Sitra_Megatrendit_2026_Selvitys_web.pdf"
 ]))
 

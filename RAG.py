@@ -1,11 +1,11 @@
 # Lataus + chunkkaus + vektorit
-from langchain_community.document_loaders import WebBaseLoader
+from langchain_community.document_loaders import WebBaseLoader, PyPDFLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_community.vectorstores import Chroma
 from langchain_ollama import OllamaEmbeddings
 from config import URLS
 
-# Voidaanko ladata levylle ? 
+# Voidaanko ladata levylle ?
 
 def build_vectorstore():
     print("--- VAIHE 1: Ladataan sivut ---")
@@ -14,8 +14,16 @@ def build_vectorstore():
     for i, url in enumerate(URLS):
         try:
             print(f"[{i+1}/{len(URLS)}] {url}")
-            loader = WebBaseLoader(url)
-            all_docs.extend(loader.load())
+
+            if url.lower().endswith(".pdf"):
+                loader = PyPDFLoader(url)
+                docs = loader.load()
+
+            else:
+                loader = WebBaseLoader(url)
+                docs = loader.load()
+
+            all_docs.extend(docs)
         except Exception as e:
             print(f"Virhe: {e}")
 
