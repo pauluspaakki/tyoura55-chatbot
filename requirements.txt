@@ -8,5 +8,6 @@ langchain-community
 langchain-text-splitters
 chromadb
 ollama
+libvoikko
 
 # pip install -r requirements.txt

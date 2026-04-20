@@ -1,9 +1,11 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from RAG import build_vectorstore
+#import libvoikko
 
 app = Flask(__name__)
 CORS(app)
+
 
 # MUUTOS:
 # rakennetaan vectorstore erillisestä tiedostosta
@@ -20,7 +22,8 @@ def chat():
     prompt = f"""
     Olet asiantuntija ikäjohtamisessa. Käytä alla olevaa lähdeaineistoa vastaamaan kysymykseen.
     Jos vastausta ei löydy aineistosta, sano ettet tiedä, älä keksi omia.
-    Tervehdi ystävällisesti, vastaa suomeksi ja enintään viidellä lauseella.
+    Tervehdi ystävällisesti, vastaa suomeksi.
+    Käytä vastauksessa enintään viittä lausetta.
 
     {context}
 

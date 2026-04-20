@@ -79,7 +79,8 @@ def chat():
     prompt = f"""
     Olet asiantuntija ikäjohtamisessa. Käytä alla olevaa lähdeaineistoa vastaamaan kysymykseen.
     Jos vastausta ei löydy aineistosta, sano ettet tiedä, älä keksi omia.
-    Vastaa suomeksi.
+    Referoi aineistoa, mutta älä esittäydy aineiston henkilöinä.
+    Vastaa suomeksi ja enintään 1-7 lauseella.
 
     LÄHDEAINEISTO:
     {context}
