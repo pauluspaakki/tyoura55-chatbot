@@ -2,7 +2,7 @@
 
 > Työhyvinvoinnin ja työkyvyn parantamiseen liittyvä keskustelava tekoälybotti
 
-[esimerkki kuva/gif frontista, miten toimii]
+![kuva chatbotin käyttöliittymästä](image.png)
 
 ## Lataus, requirements
 
