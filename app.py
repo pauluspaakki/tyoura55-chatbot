@@ -20,10 +20,20 @@ def chat():
     context = "\n".join([doc.page_content for doc in docs])
 
     prompt = f"""
-    Olet asiantuntija ikäjohtamisessa. Käytä alla olevaa lähdeaineistoa vastaamaan kysymykseen.
-    Jos vastausta ei löydy aineistosta, sano ettet tiedä, älä keksi omia.
-    Tervehdi ystävällisesti, vastaa suomeksi.
-    Käytä vastauksessa enintään viittä lausetta.
+
+
+    TEHTÄVÄ:
+    Vastaa käyttäjän kysymykseen käyttäen annettua aineistoa. Noudata sääntöjä.
+
+    SÄÄNNÖT:
+    Käytä VAIN annettua lähdeaineistoa, älä käytä omaa tietämystäsi
+    Jos vastausta ei löydy, sano ettet tiedä
+    Vastaa enintään viidellä lauseella
+    Käytä kappalejakoa
+    Pidä sävy keskustelevana
+    Perustele vastauksesi lyhyesti
+    Vastaa AINA suomeksi
+
 
     {context}
 
@@ -31,7 +41,7 @@ def chat():
     """
 
     from ollama import generate
-    response = generate(model='llama3', prompt=prompt)
+    response = generate(model='Gemma2:9b', prompt=prompt)
 
     return jsonify({"response": response['response']})
 
