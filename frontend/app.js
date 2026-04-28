@@ -94,8 +94,17 @@ uploadBtn.addEventListener('click', () => {
 
 function showUpload() {
     document.getElementById("pdf-upload").style.display = "block";
-}
+};
 
 function hideUpload() {
     document.getElementById("pdf-upload").style.display = "none";
-}
+};
+
+window.onload = async () => {
+    console.log("start call");
+
+    const res = await fetch("http://127.0.0.1:5000/start?user_id=user123");
+    const data = await res.json();
+
+    addMessage(data.response, "bot");
+};

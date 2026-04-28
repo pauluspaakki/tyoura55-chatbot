@@ -12,6 +12,7 @@ vectorstore = build_vectorstore()
 
 user_states = {}
 
+# chatin toiminta
 @app.route('/chat', methods=['POST'])
 def chat():
     data = request.json
@@ -22,19 +23,13 @@ def chat():
 
     state = user_states.get(user_id, "start")
 
-    if state == "start":
-        user_states[user_id] = "waiting_choice"
-
-        return jsonify({
-            "response": "Haluatko keskustella täyttämäsi kyselyn tuloksista? (kyllä/ei)"
-        })
-
+    # odotetaan käyttäjän vastausta pdf-tiedoston lähetykseen
     if state == "waiting_choice":
         if user_input.lower() == "kyllä":
             user_states[user_id] = "waiting_pdf"
 
             return jsonify({
-                "response": "Lähetä pdf-tiedosto"
+                "response": "Lähetä pdf-tiedosto tai peruuta toiminto (peru)."
             })
 
         else:
@@ -44,6 +39,7 @@ def chat():
                 "response": "Selvä! Mitä haluaisit kysyä?"
             })
 
+    # keskustelu aineiston pohjalta
     if state == "normal_chat":
         docs = vectorstore.similarity_search(user_input, k=3)
         context = "\n".join([doc.page_content for doc in docs])
@@ -75,13 +71,22 @@ def chat():
 
         return jsonify({"response": response['response']})
 
+    # odotetaan käyttäjän pdf-tiedostoa
     if state == "waiting_pdf":
-        return jsonify({
-            "response": "Ole hyvä ja lähetä pdf-tiedosto."
+        if user_input.lower() in ("peru", "peruuta"):
+            user_states[user_id] = "normal_chat"
+            return jsonify({
+            "response": "Selvä! Mitä haluaisit kysyä?"
         })
+
+        else:
+            return jsonify({
+                "response": "Ole hyvä ja lähetä pdf-tiedosto tai peruuta toiminto (peru)."
+            })
 
     return jsonify({"response": "Virhe tilassa."})
 
+# pdf-tiedoston lataus (ja käsittely)
 @app.route('/upload', methods=['POST'])
 def upload_pdf():
     user_id = request.form.get("user_id", "default")
@@ -108,6 +113,16 @@ def upload_pdf():
         "response": "Pdf vastaanotettu! Mitä haluaisit kysyä?"
     })
 
+# chatin aloitus
+@app.route('/start', methods=['GET'])
+def start():
+    user_id = request.args.get("user_id", "default")
+
+    user_states[user_id] = "waiting_choice"
+
+    return jsonify({
+            "response": "Hei! Haluatko keskustella täyttämäsi kyselyn tuloksista? (kyllä/ei)"
+    })
 
 if __name__ == '__main__':
     print("Serveri käynnissä: http://localhost:5000")
