@@ -1,50 +1,112 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from RAG import build_vectorstore
+import os
 #import libvoikko
 
 app = Flask(__name__)
 CORS(app)
 
-
-# MUUTOS:
 # rakennetaan vectorstore erillisestä tiedostosta
 vectorstore = build_vectorstore()
 
+user_states = {}
+
 @app.route('/chat', methods=['POST'])
 def chat():
-    user_input = request.json.get('message')
-    print(f"Kysymys: {user_input}")
+    data = request.json
+    user_input = data.get('message')
+    user_id = data.get('user_id', 'default')
 
-    docs = vectorstore.similarity_search(user_input, k=3)
-    context = "\n".join([doc.page_content for doc in docs])
+    print(f"Käyttäjän syöte: {user_input}")
 
-    prompt = f"""
+    state = user_states.get(user_id, "start")
 
-   ROOLI:
-    Olet asiantunteva ja helposti lähestyttävä tekoälybotti yli 55-vuotiaiden työhyvinvoinnin ohjauksessa.
+    if state == "start":
+        user_states[user_id] = "waiting_choice"
 
-    TEHTÄVÄ:
-    Vastaa käyttäjän kysymykseen hyödyntäen annettua aineistoa.
+        return jsonify({
+            "response": "Haluatko keskustella täyttämäsi kyselyn tuloksista? (kyllä/ei)"
+        })
 
-    SÄÄNNÖT:
-    1. Käytä vastauksen tietopohjana VAIN annettua aineistoa.
-    2. ÄLÄ SISÄLLYTTÄÄ vastaukseen akateemisia lähdeviitteitä, vuosilukuja tai tutkijoiden nimiä (esim. jätä pois "van Laar ym." tai "(2017)").
-    3. Puhu suoraan asiaa ja pidä kieli selkeänä suomen kielenä.
-    4. Jos vastausta ei löydy aineistosta, sano ettet tiedä.
-    5. Vastaa enintään viidellä lauseella ja käytä kappalejakoa.
-    6. Sävy: Keskusteleva, kannustava ja lämmin.
+    if state == "waiting_choice":
+        if user_input.lower() == "kyllä":
+            user_states[user_id] = "waiting_pdf"
+
+            return jsonify({
+                "response": "Lähetä pdf-tiedosto"
+            })
+
+        else:
+            user_states[user_id] = "normal_chat"
+
+            return jsonify({
+                "response": "Selvä! Mitä haluaisit kysyä?"
+            })
+
+    if state == "normal_chat":
+        docs = vectorstore.similarity_search(user_input, k=3)
+        context = "\n".join([doc.page_content for doc in docs])
+
+        prompt = f"""
+
+        ROOLI:
+        Olet asiantunteva ja helposti lähestyttävä tekoälybotti yli 55-vuotiaiden työhyvinvoinnin ohjauksessa.
+
+        TEHTÄVÄ:
+        Vastaa käyttäjän kysymykseen hyödyntäen annettua aineistoa.
+
+        SÄÄNNÖT:
+        1. Käytä vastauksen tietopohjana VAIN annettua aineistoa.
+        2. ÄLÄ SISÄLLYTTÄÄ vastaukseen akateemisia lähdeviitteitä, vuosilukuja tai tutkijoiden nimiä (esim. jätä pois "van Laar ym." tai "(2017)").
+        3. Puhu suoraan asiaa ja pidä kieli selkeänä suomen kielenä.
+        4. Jos vastausta ei löydy aineistosta, sano ettet tiedä.
+        5. Vastaa enintään viidellä lauseella ja käytä kappalejakoa.
+        6. Sävy: Keskusteleva, kannustava ja lämmin.
 
 
-    {context}
+        {context}
 
-    Kysymys: {user_input}
-    """
+        Kysymys: {user_input}
+        """
 
-    from ollama import generate
-    response = generate(model='Gemma2:9b', prompt=prompt)
+        from ollama import generate
+        response = generate(model='Gemma2:9b', prompt=prompt)
 
-    return jsonify({"response": response['response']})
+        return jsonify({"response": response['response']})
+
+    if state == "waiting_pdf":
+        return jsonify({
+            "response": "Ole hyvä ja lähetä pdf-tiedosto."
+        })
+
+    return jsonify({"response": "Virhe tilassa."})
+
+@app.route('/upload', methods=['POST'])
+def upload_pdf():
+    user_id = request.form.get("user_id", "default")
+
+    if 'file' not in request.files:
+        return jsonify({"error": "Ei tiedostoa"}), 400
+
+    file = request.files['file']
+
+    if file.filename == '':
+        return jsonify({"error": "Tyhjä tiedosto"}), 400
+
+    filepath = "temp.pdf"
+    file.save(filepath)
+
+    print("Pdf vastaanotettu")
+
+    if os.path.exists(filepath):
+        os.remove(filepath)
+
+    user_states[user_id] = "normal_chat"
+
+    return jsonify({
+        "response": "Pdf vastaanotettu! Mitä haluaisit kysyä?"
+    })
 
 
 if __name__ == '__main__':
