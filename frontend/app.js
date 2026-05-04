@@ -35,7 +35,7 @@ inputForm.addEventListener('submit', async (e) => {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 message: message,
-                user_id: "user123"
+                user_id: "temp_user"
             })
         });
 
@@ -58,9 +58,9 @@ inputForm.addEventListener('submit', async (e) => {
 async function uploadPdf(file) {
     const formData = new FormData();
     formData.append("file", file);
-    formData.append("user_id", "user123");
+    formData.append("user_id", "temp_user");
 
-    const res = await fetch("http://127.0.0.1:5000/upload", {
+    const res = await fetch("http://localhost:5000/upload", {
         method: "POST",
         body: formData
     });
@@ -70,6 +70,13 @@ async function uploadPdf(file) {
     addMessage(data.response || "Pdf käsitelty", 'bot');
 
 }
+
+document.getElementById("pdf-input").addEventListener("change", (e) => {
+    const file = e.target.files[0];
+    if (file) {
+        uploadPdf(file);
+    }
+});
 
 window.onload = async () => {
     console.log("start call");

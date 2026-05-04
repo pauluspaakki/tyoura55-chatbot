@@ -2,6 +2,8 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 from RAG import build_vectorstore
 import os
+from langchain_community.document_loaders import PyPDFLoader
+from langchain_text_splitters import RecursiveCharacterTextSplitter
 #import libvoikko
 
 app = Flask(__name__)
@@ -12,16 +14,22 @@ vectorstore = build_vectorstore()
 
 user_data = {}
 
-# chatin toiminta
+# CHAT
 @app.route('/chat', methods=['POST'])
 def chat():
     data = request.json
     user_input = data.get('message')
+    user_id = data.get("user_id", "temp_user")
 
     print(f"Käyttäjän syöte: {user_input}")
 
-    # keskustelu aineiston pohjalta
-    docs = vectorstore.similarity_search(user_input, k=3)
+    # botti hakee vain käyttäjän pdf-dataa:
+    docs = vectorstore.similarity_search(
+      user_input,
+      k=3,
+      filter={"user_id": user_id}
+)
+
     context = "\n".join([doc.page_content for doc in docs])
 
     prompt = f"""
@@ -31,19 +39,25 @@ def chat():
 
     TEHTÄVÄ:
     Vastaa käyttäjän kysymykseen hyödyntäen annettua aineistoa.
+    Hyödynnä lisäksi käyttäjän lomaketuloksia jos ne ovat saatavilla.
+
+    LOMAKKEEN TULKINTA:
+    - Arvo 1–2 = hälyttävä → tarjoa tukea ja konkreettisia neuvoja
+    - Arvo 3 = kohtalainen → anna kevyitä kehitysehdotuksia
+    - Arvo 4–5 = hyvä → kannusta ja vahvista nykyistä toimintaa
 
     SÄÄNNÖT:
     1. Käytä vastauksen tietopohjana VAIN annettua aineistoa.
     2. ÄLÄ SISÄLLYTTÄÄ vastaukseen akateemisia lähdeviitteitä, vuosilukuja tai tutkijoiden nimiä (esim. jätä pois "van Laar ym." tai "(2017)").
-    3. Puhu suoraan asiaa ja pidä kieli selkeänä suomen kielenä.
+    3. Puhu suoraan asiaa ja pidä kieli selkeänä suomenkielenä.
     4. Jos vastausta ei löydy aineistosta, sano ettet tiedä.
-    5. Vastaa enintään viidellä lauseella ja käytä kappalejakoa.
+    5. Vastaa enintään viidellä lauseella ja käytä KAPPALEJAKOA.
     6. Sävy: Keskusteleva, kannustava ja lämmin.
 
-
+    AINEISTO:
     {context}
 
-    Kysymys: {user_input}
+    KYSYMYS: {user_input}
     """
 
     from ollama import generate
@@ -51,11 +65,16 @@ def chat():
 
     return jsonify({"response": response['response']})
 
-# pdf-tiedoston lataus (ja käsittely)
+# PDF UPLOAD
 @app.route('/upload', methods=['POST'])
+
 def upload_pdf():
     if 'file' not in request.files:
         return jsonify({"error": "Ei tiedostoa"}), 400
+
+    user_id = request.form.get("user_id", "temp_user")
+
+    print("UPLOAD endpoint kutsuttu")
 
     file = request.files['file']
 
@@ -65,22 +84,31 @@ def upload_pdf():
     filepath = "temp.pdf"
     file.save(filepath)
 
-    print("Pdf vastaanotettu")
+    loader = PyPDFLoader(filepath)
+    docs = loader.load()
 
-    if os.path.exists(filepath):
-        os.remove(filepath)
+    splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=100)
+    chunks = splitter.split_documents(docs)
+    for chunk in chunks:
+        chunk.metadata["user.id"] = user_id
+
+    # käyttäjän data vectorstoreen
+    vectorstore.add_documents(chunks)
+
+    os.remove(filepath)
 
     return jsonify({
-        "response": "Pdf vastaanotettu!"
+        "response": "Pdf vastaanotettu ja käsitelty!"
     })
 
 # chatin aloitus
 @app.route('/start', methods=['GET'])
 def start():
     return jsonify({
-        "response": "Hei! Olen asiantuntijabotti työhyvinvoinnin ja osaamisen edistämisessä."
-        " Voit lähettää pdf-tiedoston täyttämäsi kyselyn tuloksista klikkaamalla plussaa vasemmasta alakulmasta."
-        " Voin vastata kysymyksiisi myös ilman tiedoston lähettämistä :)"
+        "response": "Hei! Olen asiantuntijabotti työhyvinvoinnin ja -osaamisen edistämisessä.\n\n"
+        " Voit lähettää pdf-tiedoston täyttämäsi kyselyn tuloksista klikkaamalla plussaa vasemmasta alakulmasta,"
+        " tai voin vastata kysymyksiisi myös ilman tiedoston lähettämistä.\n\n"
+        " Kertoisitko roolisi työelämässä ja miten voisin auttaa sinua?"
     })
 
 if __name__ == '__main__':

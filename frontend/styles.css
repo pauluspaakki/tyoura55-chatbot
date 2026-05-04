@@ -44,6 +44,7 @@ body {
     background: #e4e6eb;
     color: black;
     align-self: flex-start;
+    white-space: pre-line; 
 }
 
 /* Syöttökenttä */
