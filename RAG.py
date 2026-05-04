@@ -12,10 +12,11 @@ def build_vectorstore():
 
     # 1. TARKISTUS: Jos tietokanta on jo levyllä, älä lataa netistä mitään
     if os.path.exists(persist_directory):
-        print("--- Tietokanta löytyi levyltä, ladataan se... ---")
-        return Chroma(
+       print("--- Ladataan olemassa oleva Chroma ---")
+       return Chroma(
+            persist_directory=persist_directory,
             embedding_function=embedding_model
-        )
+    )
 
     # 2. LATAUS: Jos tietokantaa ei ole, ladataan aineisto netistä
     print("--- Tietokantaa ei löytynyt. Aloitetaan lataus (tämä kestää hetken)... ---")
@@ -43,6 +44,7 @@ def build_vectorstore():
     vectorstore = Chroma.from_documents(
         documents=chunks,
         embedding=embedding_model,
+        persist_directory=persist_directory
     )
 
     print("VALMIS! Tietokanta on nyt tallennettu kansioon './chroma_db'")

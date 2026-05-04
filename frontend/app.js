@@ -60,7 +60,7 @@ async function uploadPdf(file) {
     formData.append("file", file);
     formData.append("user_id", "temp_user");
 
-    const res = await fetch("http://localhost:5000/upload", {
+    const res = await fetch("http://127.0.0.1:5000/upload", {
         method: "POST",
         body: formData
     });

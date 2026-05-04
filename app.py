@@ -92,14 +92,14 @@ def upload_pdf():
     for chunk in chunks:
         chunk.metadata["user.id"] = user_id
 
-    # käyttäjän data vectorstoreen
+    print("chunks:", len(chunks))
     vectorstore.add_documents(chunks)
+
+    print("ADDED TO VECTORSTORE")
 
     os.remove(filepath)
 
-    return jsonify({
-        "response": "Pdf vastaanotettu ja käsitelty!"
-    })
+    return jsonify({"response": "Pdf vastaanotettu ja käsitelty!"})
 
 # chatin aloitus
 @app.route('/start', methods=['GET'])

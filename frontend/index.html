@@ -12,12 +12,12 @@
     <div id="chat-container">
         <div id="chat-window"></div>
 
-        <form id="input-area">
+        <form id="input-area" onsubmit="return false;">
             <input type="file" id="pdf-input" hidden/>
             <label for="pdf-input">+</label>
 
             <input type="text" id="user-input" placeholder="Kirjoita viesti..." autocomplete="off">
-            <button type="submit">Lähetä</button>
+            <button type="button">Lähetä</button>
         </form>
     </div>
     <script src="app.js"></script>
