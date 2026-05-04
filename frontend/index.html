@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Yksinkertainen Chat</title>
+    <title>Työura55+ chatbot</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 
@@ -12,12 +12,10 @@
     <div id="chat-container">
         <div id="chat-window"></div>
 
-        <div id="pdf-upload" style="display: none;">
-            <input type="file" id="pdf-input" />
-            <button id="upload-btn">Lataa pdf</button>
-        </div>
-
         <form id="input-area">
+            <input type="file" id="pdf-input" hidden/>
+            <label for="pdf-input">+</label>
+
             <input type="text" id="user-input" placeholder="Kirjoita viesti..." autocomplete="off">
             <button type="submit">Lähetä</button>
         </form>

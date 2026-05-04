@@ -1,8 +1,6 @@
 const chatWindow = document.getElementById('chat-window');
 const inputForm = document.getElementById('input-area');
 const userInput = document.getElementById('user-input');
-const pdfInput = document.getElementById('pdf-input');
-const uploadBtn = document.getElementById('upload-btn');
 
 function addMessage(text, sender) {
     const div = document.createElement('div');
@@ -45,13 +43,6 @@ inputForm.addEventListener('submit', async (e) => {
 
         const responseText = data.response;
 
-        if (
-            responseText.toLowerCase().includes("lähetä pdf-tiedosto")) {
-            showUpload();
-        } else {
-            hideUpload();
-        }
-
         // 4. Poista latausviesti ja lisää oikea vastaus
         chatWindow.removeChild(loadingDiv);
         addMessage(responseText, 'bot');
@@ -78,32 +69,12 @@ async function uploadPdf(file) {
 
     addMessage(data.response || "Pdf käsitelty", 'bot');
 
-    hideUpload();
 }
-
-uploadBtn.addEventListener('click', () => {
-    const file = document.getElementById("pdf-input").files[0];
-
-    if (!file) {
-        alert("Valitse pdf!");
-        return;
-    }
-
-    uploadPdf(file);
-});
-
-function showUpload() {
-    document.getElementById("pdf-upload").style.display = "block";
-};
-
-function hideUpload() {
-    document.getElementById("pdf-upload").style.display = "none";
-};
 
 window.onload = async () => {
     console.log("start call");
 
-    const res = await fetch("http://127.0.0.1:5000/start?user_id=user123");
+    const res = await fetch("http://127.0.0.1:5000/start");
     const data = await res.json();
 
     addMessage(data.response, "bot");

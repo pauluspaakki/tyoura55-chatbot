@@ -10,87 +10,50 @@ CORS(app)
 # rakennetaan vectorstore erillisestä tiedostosta
 vectorstore = build_vectorstore()
 
-user_states = {}
+user_data = {}
 
 # chatin toiminta
 @app.route('/chat', methods=['POST'])
 def chat():
     data = request.json
     user_input = data.get('message')
-    user_id = data.get('user_id', 'default')
 
     print(f"Käyttäjän syöte: {user_input}")
 
-    state = user_states.get(user_id, "start")
-
-    # odotetaan käyttäjän vastausta pdf-tiedoston lähetykseen
-    if state == "waiting_choice":
-        if user_input.lower() == "kyllä":
-            user_states[user_id] = "waiting_pdf"
-
-            return jsonify({
-                "response": "Lähetä pdf-tiedosto tai peruuta toiminto (peru)."
-            })
-
-        else:
-            user_states[user_id] = "normal_chat"
-
-            return jsonify({
-                "response": "Selvä! Mitä haluaisit kysyä?"
-            })
-
     # keskustelu aineiston pohjalta
-    if state == "normal_chat":
-        docs = vectorstore.similarity_search(user_input, k=3)
-        context = "\n".join([doc.page_content for doc in docs])
+    docs = vectorstore.similarity_search(user_input, k=3)
+    context = "\n".join([doc.page_content for doc in docs])
 
-        prompt = f"""
+    prompt = f"""
 
-        ROOLI:
-        Olet asiantunteva ja helposti lähestyttävä tekoälybotti yli 55-vuotiaiden työhyvinvoinnin ohjauksessa.
+    ROOLI:
+    Olet asiantunteva ja helposti lähestyttävä tekoälybotti yli 55-vuotiaiden työhyvinvoinnin ohjauksessa.
 
-        TEHTÄVÄ:
-        Vastaa käyttäjän kysymykseen hyödyntäen annettua aineistoa.
+    TEHTÄVÄ:
+    Vastaa käyttäjän kysymykseen hyödyntäen annettua aineistoa.
 
-        SÄÄNNÖT:
-        1. Käytä vastauksen tietopohjana VAIN annettua aineistoa.
-        2. ÄLÄ SISÄLLYTTÄÄ vastaukseen akateemisia lähdeviitteitä, vuosilukuja tai tutkijoiden nimiä (esim. jätä pois "van Laar ym." tai "(2017)").
-        3. Puhu suoraan asiaa ja pidä kieli selkeänä suomen kielenä.
-        4. Jos vastausta ei löydy aineistosta, sano ettet tiedä.
-        5. Vastaa enintään viidellä lauseella ja käytä kappalejakoa.
-        6. Sävy: Keskusteleva, kannustava ja lämmin.
+    SÄÄNNÖT:
+    1. Käytä vastauksen tietopohjana VAIN annettua aineistoa.
+    2. ÄLÄ SISÄLLYTTÄÄ vastaukseen akateemisia lähdeviitteitä, vuosilukuja tai tutkijoiden nimiä (esim. jätä pois "van Laar ym." tai "(2017)").
+    3. Puhu suoraan asiaa ja pidä kieli selkeänä suomen kielenä.
+    4. Jos vastausta ei löydy aineistosta, sano ettet tiedä.
+    5. Vastaa enintään viidellä lauseella ja käytä kappalejakoa.
+    6. Sävy: Keskusteleva, kannustava ja lämmin.
 
 
-        {context}
+    {context}
 
-        Kysymys: {user_input}
-        """
+    Kysymys: {user_input}
+    """
 
-        from ollama import generate
-        response = generate(model='Gemma2:9b', prompt=prompt)
+    from ollama import generate
+    response = generate(model='Gemma2:9b', prompt=prompt)
 
-        return jsonify({"response": response['response']})
-
-    # odotetaan käyttäjän pdf-tiedostoa
-    if state == "waiting_pdf":
-        if user_input.lower() in ("peru", "peruuta"):
-            user_states[user_id] = "normal_chat"
-            return jsonify({
-            "response": "Selvä! Mitä haluaisit kysyä?"
-        })
-
-        else:
-            return jsonify({
-                "response": "Ole hyvä ja lähetä pdf-tiedosto tai peruuta toiminto (peru)."
-            })
-
-    return jsonify({"response": "Virhe tilassa."})
+    return jsonify({"response": response['response']})
 
 # pdf-tiedoston lataus (ja käsittely)
 @app.route('/upload', methods=['POST'])
 def upload_pdf():
-    user_id = request.form.get("user_id", "default")
-
     if 'file' not in request.files:
         return jsonify({"error": "Ei tiedostoa"}), 400
 
@@ -107,21 +70,17 @@ def upload_pdf():
     if os.path.exists(filepath):
         os.remove(filepath)
 
-    user_states[user_id] = "normal_chat"
-
     return jsonify({
-        "response": "Pdf vastaanotettu! Mitä haluaisit kysyä?"
+        "response": "Pdf vastaanotettu!"
     })
 
 # chatin aloitus
 @app.route('/start', methods=['GET'])
 def start():
-    user_id = request.args.get("user_id", "default")
-
-    user_states[user_id] = "waiting_choice"
-
     return jsonify({
-            "response": "Hei! Haluatko keskustella täyttämäsi kyselyn tuloksista? (kyllä/ei)"
+        "response": "Hei! Olen asiantuntijabotti työhyvinvoinnin ja osaamisen edistämisessä."
+        " Voit lähettää pdf-tiedoston täyttämäsi kyselyn tuloksista klikkaamalla plussaa vasemmasta alakulmasta."
+        " Voin vastata kysymyksiisi myös ilman tiedoston lähettämistä :)"
     })
 
 if __name__ == '__main__':
