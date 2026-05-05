@@ -111,6 +111,7 @@ def upload_pdf():
 
     os.remove(filepath)
 
+    return jsonify({"message": "PDF käsitelty onnistuneesti"}), 200
 
 # chatin aloitus, START endpoint
 @app.route('/start', methods=['GET'])
