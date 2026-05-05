@@ -5,7 +5,6 @@ import os
 from langchain_community.document_loaders import PyPDFLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 
-
 app = Flask(__name__)
 CORS(app)
 
@@ -14,7 +13,7 @@ vectorstore = build_vectorstore()
 
 user_data = {}
 
-# CHAT
+# CHAT endpoint
 @app.route('/chat', methods=['POST'])
 def chat():
     data = request.json
@@ -23,12 +22,11 @@ def chat():
 
     print(f"Käyttäjän syöte: {user_input}")
 
-    # botti hakee vain käyttäjän pdf-dataa:
     docs = vectorstore.similarity_search(
       user_input,
       k=3,
       filter={"user_id": user_id}
-)
+    )
 
     context = "\n".join([doc.page_content for doc in docs])
 
@@ -38,20 +36,32 @@ def chat():
     Olet asiantunteva ja helposti lähestyttävä tekoälybotti yli 55-vuotiaiden työhyvinvoinnin ohjauksessa.
 
     TEHTÄVÄ:
-    Vastaa käyttäjän kysymykseen hyödyntäen annettua aineistoa.
-    Hyödynnä lisäksi käyttäjän lomaketuloksia jos ne ovat saatavilla.
+    Toimi kahdessa eri tilanteessa:
+
+    1) JOS aineistossa on käyttäjän lomaketuloksia (esim. numeroita 1–5 eri kategorioissa):
+    → analysoi tulokset ja anna henkilökohtaista palautetta
+
+    2) JOS lomaketuloksia EI ole:
+    → vastaa käyttäjän kysymykseen normaalisti aineiston pohjalta
 
     LOMAKKEEN TULKINTA:
-    - Arvo 1–2 = hälyttävä → tarjoa tukea ja konkreettisia neuvoja
-    - Arvo 3 = kohtalainen → anna kevyitä kehitysehdotuksia
-    - Arvo 4–5 = hyvä → kannusta ja vahvista nykyistä toimintaa
+    - Tunnista kategoriat ja niiden keskiarvot (1–5)
+    - 1–2 = hälyttävä → tarjoa konkreettinen neuvo
+    - 3 = kohtalainen → anna kehitysehdotus
+    - 4–5 = hyvä → kannusta
+
+    ANALYYSIOHJEET:
+    - Nosta esiin 2–3 tärkeintä huomiota
+    - Älä listaa kaikkia arvoja, vaan tulkitse niitä
+    - Puhu suoraan käyttäjälle ("Sinulla näyttää olevan...")
+    - Ole kannustava, ei tuomitseva
 
     SÄÄNNÖT:
     1. Käytä vastauksen tietopohjana VAIN annettua aineistoa.
     2. ÄLÄ SISÄLLYTTÄÄ vastaukseen akateemisia lähdeviitteitä, vuosilukuja tai tutkijoiden nimiä (esim. jätä pois "van Laar ym." tai "(2017)").
     3. Puhu suoraan asiaa ja pidä kieli selkeänä suomenkielenä.
     4. Jos vastausta ei löydy aineistosta, sano ettet tiedä.
-    5. Vastaa enintään viidellä lauseella ja käytä KAPPALEJAKOA.
+    5. Vastaa enintään viidellä lauseella ja käytä KAPPALEJAKOA kieliopillisesti oikein.
     6. Sävy: Keskusteleva, kannustava ja lämmin.
 
     AINEISTO:
@@ -65,7 +75,8 @@ def chat():
 
     return jsonify({"response": response['response']})
 
-# PDF UPLOAD
+
+# PDF UPLOAD endpoint
 @app.route('/upload', methods=['POST'])
 
 def upload_pdf():
@@ -89,19 +100,19 @@ def upload_pdf():
 
     splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=100)
     chunks = splitter.split_documents(docs)
+
     for chunk in chunks:
+        chunk.metadata["type"] = "user_form"
         chunk.metadata["user.id"] = user_id
 
-    print("chunks:", len(chunks))
     vectorstore.add_documents(chunks)
 
-    print("ADDED TO VECTORSTORE")
+    print("PDF LISÄTTY VECTORSTOREEN")
 
     os.remove(filepath)
 
-    return jsonify({"response": "Pdf vastaanotettu ja käsitelty!"})
 
-# chatin aloitus
+# chatin aloitus, START endpoint
 @app.route('/start', methods=['GET'])
 def start():
     return jsonify({
@@ -110,6 +121,7 @@ def start():
         " tai voin vastata kysymyksiisi myös ilman tiedoston lähettämistä.\n\n"
         " Kertoisitko roolisi työelämässä ja miten voisin auttaa sinua?"
     })
+
 
 if __name__ == '__main__':
     print("Serveri käynnissä: http://localhost:5000")
