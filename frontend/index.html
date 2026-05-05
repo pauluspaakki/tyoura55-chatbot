@@ -9,11 +9,18 @@
 </head>
 
 <body>
-    <div id="chat-container">
+    <div id="chat-toggle">💬</div>
+
+    <div id="chat-popup" class="hidden">
+        <div id="chat-header">
+            <span>TYÖURA55+ botti</span>
+            <button id="close-chat">✖</button>
+        </div>
+
         <div id="chat-window"></div>
 
         <form id="input-area" onsubmit="return false;">
-            <input type="file" id="pdf-input" hidden/>
+            <input type="file" id="pdf-input" hidden />
             <label for="pdf-input">+</label>
 
             <input type="text" id="user-input" placeholder="Kirjoita viesti..." autocomplete="off">
