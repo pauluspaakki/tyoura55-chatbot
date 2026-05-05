@@ -4,7 +4,7 @@ from RAG import build_vectorstore
 import os
 from langchain_community.document_loaders import PyPDFLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
-#import libvoikko
+
 
 app = Flask(__name__)
 CORS(app)
