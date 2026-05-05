@@ -1,15 +1,25 @@
 const chatWindow = document.getElementById('chat-window');
 const inputForm = document.getElementById('input-area');
 const userInput = document.getElementById('user-input');
+const toggleBtn = document.getElementById("chat-toggle");
+const chatPopup = document.getElementById("chat-popup");
+const closeBtn = document.getElementById("close-chat");
+
+// UI
+toggleBtn.addEventListener("click", () => {
+    chatPopup.classList.toggle("hidden");
+});
+
+closeBtn.addEventListener("click", () => {
+    chatPopup.classList.add("hidden");
+});
+
 
 function addMessage(text, sender) {
     const div = document.createElement('div');
     div.classList.add('message', sender);
     div.textContent = text;
     chatWindow.appendChild(div);
-
-    // Vieritä automaattisesti alas
-    chatWindow.scrollTop = chatWindow.scrollHeight;
 }
 
 inputForm.addEventListener('submit', async (e) => {
@@ -65,16 +75,33 @@ async function uploadPdf(file) {
         body: formData
     });
 
-    const data = await res.json();
-
-    addMessage(data.response || "Pdf käsitelty", 'bot');
-
+    if (!res.ok) {
+        throw new Error("Upload failed");
+    }
 }
 
-document.getElementById("pdf-input").addEventListener("change", (e) => {
+document.getElementById("pdf-input").addEventListener("change", async (e) => {
     const file = e.target.files[0];
-    if (file) {
-        uploadPdf(file);
+    if (!file) return;
+
+    // näytä heti käyttäjälle
+    addMessage(`📄 ${file.name}`, 'user');
+
+    // loading
+    const loadingDiv = document.createElement('div');
+    loadingDiv.classList.add('message', 'bot');
+    loadingDiv.textContent = "Käsitellään PDF...";
+    chatWindow.appendChild(loadingDiv);
+
+    try {
+        await uploadPdf(file);
+
+        chatWindow.removeChild(loadingDiv);
+        addMessage("✅ PDF ladattu onnistuneesti!", "bot");
+
+    } catch (err) {
+        chatWindow.removeChild(loadingDiv);
+        addMessage("❌ PDF:n käsittely epäonnistui", "bot");
     }
 });
 
