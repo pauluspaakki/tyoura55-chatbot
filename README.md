@@ -1,6 +1,6 @@
 # Tyoura55+ -chatbot
 
-Työhyvinvoinnin ja työkyvyn parantamiseen liittyvä keskusteleva tekoälybotti
+[Työhyvinvoinnin ja työkyvyn parantamiseen liittyvä keskusteleva tekoälybotti](https://www.tuni.fi/fi/tutkimus/tyoura55)
 
 ![kuva chatbotin käyttöliittymästä](image.png)
 
