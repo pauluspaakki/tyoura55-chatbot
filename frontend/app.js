@@ -5,7 +5,7 @@ const toggleBtn = document.getElementById("chat-toggle");
 const chatPopup = document.getElementById("chat-popup");
 const closeBtn = document.getElementById("close-chat");
 
-// UI
+// UI elements
 toggleBtn.addEventListener("click", () => {
     chatPopup.classList.toggle("hidden");
 });
