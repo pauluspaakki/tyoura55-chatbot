@@ -24,5 +24,7 @@ Botti on mahdollista liittää ulkoiselle serverille esimerkiksi pilvipalveluihi
 
 ## Lisenssi ja tekijät
 [Paulus Paakki](https://github.com/pauluspaakki)
+
 [Nelli Kemppainen](https://github.com/neplutin)
+
 [Eevi Mäki-Uuro](https://github.com/eeveei)
