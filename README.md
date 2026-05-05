@@ -9,7 +9,7 @@ Tämä projekti on chatbot, jonka tarkoituksena on auttaa käyttäjää kehittä
 
 ## Dev - ympäristön pystytys
 > Kloonaa repositorio 
-> Lataa [https://ollama.com/library/llama3]ollama3, requirements.txt importit (pip install -r reaquirments.txt)
+> Lataa [https://ollama.com/library/llama3](ollama3), requirements.txt importit (pip install -r reaquirments.txt)
 >
 
 ## Botin ominaisuudet 
