@@ -14,6 +14,7 @@ Tämä projekti on chatbot, jonka tarkoituksena on auttaa käyttäjää kehittä
 3. Käynnistä sovellus komennoilla
    ```ollama pull gemma2:9b``` ja
    ```run app.py```
+4. Avaa portissa http://localhost:5000 tai avaa frontendistä index.html-tiedosto
 
 
 ## Botin ominaisuudet 
