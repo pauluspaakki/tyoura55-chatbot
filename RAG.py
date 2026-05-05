@@ -22,7 +22,7 @@ def build_vectorstore():
     print("--- Tietokantaa ei löytynyt. Aloitetaan lataus (tämä kestää hetken)... ---")
 
     all_docs = []
-    # Käytetään tässä aiempaa URLS-listaasi
+    # config.py URL-lista:
     for i, url in enumerate(URLS):
         try:
             print(f"[{i+1}/{len(URLS)}] Ladataan: {url}")
@@ -49,3 +49,4 @@ def build_vectorstore():
 
     print("VALMIS! Tietokanta on nyt tallennettu kansioon './chroma_db'")
     return vectorstore
+
